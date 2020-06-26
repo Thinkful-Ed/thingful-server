@@ -28,6 +28,7 @@ describe('Things Endpoints', function() {
     beforeEach(`insert things`,()=>{
       helpers.seedThingsTables(db,testUsers,testThings,testReviews)
     })
+    
     const protectedEndpoints = [
       {name:`GET /api/things/:thing_id`,path:`/api/things/1`},
       {name:`GET /api/things/:thing_id/reviews `,path:`/api/things/1/reviews`},
@@ -49,10 +50,10 @@ describe('Things Endpoints', function() {
         })
       })
     })
-    /*
+    
     describe.only(`GET /api/things/:thing_id`,()=>{
       beforeEach(()=>{
-        db.into().insert()
+        db.into('thingful').insert(testThings)
       })
       it(`respond with 401 when no basic token`,()=>{
         return supertest(app)
@@ -80,7 +81,7 @@ describe('Things Endpoints', function() {
           .set('Authorization', makeAuthHeader(userInvalidPass))
           .expect(401,{error:`Unauthorized request`});
       })
-    })*/
+    })
   })
 
 
