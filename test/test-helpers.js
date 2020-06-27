@@ -223,9 +223,9 @@ function makeThingsFixtures() {
 function cleanTables(db) {
   return db.raw(
     `TRUNCATE
+      thingful_reviews,
       thingful_things,
-      thingful_users,
-      thingful_reviews
+      thingful_users
       RESTART IDENTITY CASCADE`
   )
 }
@@ -255,6 +255,11 @@ function seedMaliciousThing(db, user, thing) {
     )
 }
 
+function makeAuthHeader(user) {
+  const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64')
+  return `Basic ${token}`
+}
+
 module.exports = {
   makeUsersArray,
   makeThingsArray,
@@ -267,4 +272,5 @@ module.exports = {
   cleanTables,
   seedThingsTables,
   seedMaliciousThing,
+  makeAuthHeader,
 }
