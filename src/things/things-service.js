@@ -1,5 +1,6 @@
 const xss = require('xss')
 const Treeize = require('treeize')
+const {requireAuth}= require('../middleware/basic-auth')
 
 const ThingsService = {
   getAllThings(db) {
