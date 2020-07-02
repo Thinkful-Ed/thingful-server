@@ -13,12 +13,8 @@ const ThingsService = {
         'thg.content',
         'thg.image',
         ...userFields,
-        db.raw(
-          `count(DISTINCT rev) AS number_of_reviews`
-        ),
-        db.raw(
-          `AVG(rev.rating) AS average_review_rating`
-        ),
+        db.raw(`count(DISTINCT rev) AS number_of_reviews`),
+        db.raw(`AVG(rev.rating) AS average_review_rating`),
       )
       .leftJoin(
         'thingful_reviews AS rev',
@@ -32,13 +28,11 @@ const ThingsService = {
       )
       .groupBy('thg.id', 'usr.id')
   },
-
   getById(db, id) {
     return ThingsService.getAllThings(db)
       .where('thg.id', id)
       .first()
   },
-
   getReviewsForThing(db, thing_id) {
     return db
       .from('thingful_reviews AS rev')
@@ -57,11 +51,9 @@ const ThingsService = {
       )
       .groupBy('rev.id', 'usr.id')
   },
-
   serializeThings(things) {
     return things.map(this.serializeThing)
   },
-
   serializeThing(thing) {
     const thingTree = new Treeize()
 
@@ -81,11 +73,9 @@ const ThingsService = {
       average_review_rating: Math.round(thingData.average_review_rating) || 0,
     }
   },
-
   serializeThingReviews(reviews) {
     return reviews.map(this.serializeThingReview)
   },
-
   serializeThingReview(review) {
     const reviewTree = new Treeize()
 

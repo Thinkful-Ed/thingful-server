@@ -4,33 +4,23 @@ const helpers = require('./test-helpers')
 
 describe('Reviews Endpoints', function() {
   let db
-
-  const {
-    testThings,
-    testUsers,
-  } = helpers.makeThingsFixtures()
+  const {testThings,testUsers,} = helpers.makeThingsFixtures()
 
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
-      connection: process.env.DB_URL,
+      connection: process.env.TEST_DB_URL,
     })
     app.set('db', db)
   })
 
   after('disconnect from db', () => db.destroy())
-
   before('cleanup', () => helpers.cleanTables(db))
-
   afterEach('cleanup', () => helpers.cleanTables(db))
 
   describe(`POST /api/reviews`, () => {
     beforeEach('insert things', () =>
-      helpers.seedThingsTables(
-        db,
-        testUsers,
-        testThings,
-      )
+      helpers.seedThingsTables(db,testUsers,testThings,)
     )
 
     it(`creates an review, responding with 201 and the new review`, function() {

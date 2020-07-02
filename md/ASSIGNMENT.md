@@ -2,8 +2,6 @@
     async vs await:
         async: contain 0 or more <await> expression
         await: suspend progress through an async function, yielding control and subsequently resuming progress only when an awaited promosied-based asynchronous opt is either fulfilled or rejected
-    db.raw && DISTINCT && author:
-
     transaction():
         fundamental concept of all db system, bundles multiple steps into a single operation (all or nothing)
         take-away: complete or nothing, permanently recorded, invisible to other transaction.
@@ -27,6 +25,7 @@
             CREATE TABLE IF NOT EXIST <tableName> (
                 <columnName> SERIAL PRIMARY KEY,
             )
+        Link: https://www.postgresql.org/docs/9.5/sql-createsequence.html 
     SERIAL PRIMARY KEY:
         PRIMARY KEY: special column contain unique value
         SERIAL: 
@@ -38,8 +37,10 @@
         RESTART IDENTITY: automatically restart sequences owned by columns of the truncated table
         CASCADE: automatically truncate all have foreign-key ref to any of the named table
         RESTRICT: refuse to truncate if any of the tables have foreign key references from tables not listed in the command
-    SELECT setval()
-    treeize library
+    SELECT setval('sequence_name',nextVal):
+        Set the next value for the next sequence
+        The result returned by SETVAL() is next_value or NULL if the given next_value and round is smaller than the current value.
+        Link: https://www.postgresql.org/docs/8.2/functions-sequence.html 
 
 # PROTECTED ENDPOINTS:
     Public:
@@ -49,9 +50,10 @@
         The GET /api/things/:thing_id/reviews 
         The POST /api/reviews endpoint (automatically assign a user_id)
     PrivateRoute:
-        If a user attempts to view the login form when they're already logged in, they should be redirected to the thing list page.
         If a user tries to view reviews for a thing, they should be redirected to the login form page.
-        
+    PublicOnlyRoute:
+        If a user attempts to view the login form when they're already logged in, they should be redirected to the thing list page.
+
     The thingful-client should store the base64 encoded credentials when the login form is submitted.
     The base64 encoded credentials should be sent in requests to protected endpoints.
     
@@ -62,6 +64,9 @@
                 //Authorization: `Schema ${userName}:${password}
                 'authorization': `basic ${TokenService.getAuthToken}`,
             }
+        App component:
+            path={`/login'} && path={`/register`}:  PublicOnlyRoute
+            path={`/thing/:thingId`}:               PrivateRoute
     SERVER:
         app.js:
             const app= new Server();
@@ -82,3 +87,15 @@
             const {requireAuth} = require()
             + .all(requireAuth) for each Route
     TEST:
+
+# DATA PROTECTION:
+    Implement the logout button functionality to clear the token in local storage:
+        components/Header/header.js:
+            + TokenService.clearAuthToken()
+    Update db seeding data to use hashed passwords, using bcrypt
+    update basic-auth middleware to use bcrypts to compare the password in the basic token with the hash
+
+# SECURE LOGIN:
+    Create a POST/login endpoint that responds with a JWT(JSON Web Tokens)
+    Update login form to store the JWT from the res in local storage 
+    Change middleware to verify the JWT instead of verifying the base64 encoded basic auth header
