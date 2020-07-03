@@ -19,7 +19,7 @@ describe('Things Endpoints', function() {
   before('cleanup', () => helpers.cleanTables(db))
   afterEach('cleanup', () => helpers.cleanTables(db))
 
-  describe(`Protected endpoints`, () => {
+  describe(`Given any endpoint, missing a basic token responds appropriately`, () => {
     beforeEach(`insert things`, () => 
     {
       helpers.seedThingsTables(

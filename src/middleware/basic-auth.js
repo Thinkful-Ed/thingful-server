@@ -1,3 +1,6 @@
+const bcrypt = require('bcryptjs')
+const AuthService = require('../middleware/auth-service')
+
 function requireAuth(req, res, next) {
     const authToken = req.get(`Authorization`) || ''
     let basicToken;
@@ -18,10 +21,11 @@ function requireAuth(req, res, next) {
     req.app.get('db')('thingful_users')
         .where({user_name: tokenUserName})
         .first()
-        .then(user=>{
+        .then(user => {
             if(!user || user.password !== tokenPassword) {
                 return res.status(401).json({ error: `Unauthorized request`})
             }
+            req.user = user
             next()
         })
         .catch(next)
