@@ -24,9 +24,12 @@ describe('Things Endpoints', function() {
     {
       helpers.seedThingsTables(
         db,
-        testUsers,
         testThings,
         testReviews,
+      )
+      helpers.seedUsers(
+        db,
+        testUsers
       )
     })
 
@@ -85,14 +88,18 @@ describe('Things Endpoints', function() {
       })
     })
     context('Given there are things in the database', () => {
-      beforeEach('insert things', () =>
+      beforeEach('insert things', () => {
         helpers.seedThingsTables(
           db,
-          testUsers,
           testThings,
           testReviews,
         )
-      )
+        helpers.seedUsers(
+          db,
+          testUsers
+        )
+      })
+
       it('responds with 200 and all of the things', () => {
         const expectedThings = testThings.map(thing =>
           helpers.makeExpectedThing(
@@ -146,14 +153,17 @@ describe('Things Endpoints', function() {
       })
     })
     context('Given there are things in the database', () => {
-      beforeEach('insert things', () =>
+      beforeEach('insert things', () => {
         helpers.seedThingsTables(
           db,
-          testUsers,
           testThings,
           testReviews,
         )
-      )
+        helpers.seedUsers(
+          db,
+          testUsers,
+        )
+        })
 
       it('responds with 200 and the specified thing', () => {
         const thingId = 2
@@ -208,9 +218,17 @@ describe('Things Endpoints', function() {
       })
     })
     context('Given there are reviews for thing in the database', () => {
-      beforeEach('insert things', () =>
-        helpers.seedThingsTables(db,testUsers,testThings,testReviews,)
-      )
+      beforeEach('insert things', () => {
+        helpers.seedThingsTables(
+          db,
+          testThings,
+          testReviews,
+        )
+        helpers.seedUsers(
+          db,
+          testUsers
+        )
+        })
 
       it('responds with 200 and the specified reviews', () => {
         const thingId = 1
