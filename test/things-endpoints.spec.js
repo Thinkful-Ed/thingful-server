@@ -154,7 +154,7 @@ describe('Things Endpoints', function() {
     console.log(user)
     console.log(makeAuthHeader(user))
     context(`Given no things`, () => {
-      it.only(`responds with 404`, () => {
+      it(`responds with 404`, () => {
         const thingId = 123456
         return supertest(app)
           .get(`/api/things/${thingId}`)

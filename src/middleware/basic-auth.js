@@ -8,9 +8,13 @@ function requireAuth(req,res,next) {
         return res.status(401).json({error:`Missing basic token`});
     }
 
-    let basicToken=authToken.slice('basic'.length,authToken.length)
+    let basicToken=authToken.slice(6,authToken.length)
     const[tokenUserName, tokenPassword]= AuthService.parseBasicToken(basicToken)
-    
+    if (tokenUserName==='dunder') {
+        console.log('user equal')
+    }
+    console.log(tokenUserName)
+    console.log(basicToken)
     if (!tokenUserName || !tokenPassword) {
         return res.status(401).json({error:`Unauthorized request`})
     }
@@ -18,19 +22,17 @@ function requireAuth(req,res,next) {
     AuthService.getUserWithUserName(
         req.app.get('db'),tokenUserName)
         .then(user=>{
-            console.log(user)
+            console.log(user) 
             if(!user) res.status(401).json({error:`Unauthorized request`})
             currentUser=user;
             console.log(currentUser.password)
-            return bcrypt.compare(tokenPassword,currentUser.password)
-            
-            
+            return bcrypt.compare(tokenPassword,currentUser.password)     
         })
         // if tokenPassword === currentUser.password
         .then(passwordsMatch=>{
             if(!passwordsMatch) return res.status(401).json({error:'Unauthorized request'})
             req.user=currentUser
-            //next()
+            next()
         })
         .catch(next)
     /*
