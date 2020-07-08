@@ -1,7 +1,9 @@
 const express= require('express')
+const path= require('path')
+const jsonBodyParser= express.json()
 
 const usersRouter= express.Router()
-const jsonBodyParser= express.json()
+const UsersService= require('./users-service')
 
 usersRouter.post('/',jsonBodyParser,(req,res,next)=>{
     const {password,user_name,full_name,nickname} = req.body
@@ -22,7 +24,7 @@ usersRouter.post('/',jsonBodyParser,(req,res,next)=>{
                 .then(hashedPassword=>{
                     const newUser={
                         user_name,
-                        password,
+                        password: hashedPassword,
                         full_name,
                         nickname,
                         date_created: 'now()'
