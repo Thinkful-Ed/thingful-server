@@ -1,10 +1,12 @@
-const knex = require('knex')
-const jwt= require('jsonwebtoken')
 const app = require('../src/app')
-const helpers = require('./test-helpers')
+const knex = require('knex')
 const supertest = require('supertest')
 
-describe('Auth Endpoints',()=>{
+const helpers = require('./test-helpers')
+const jwt= require('jsonwebtoken')
+
+
+describe('PROTECTED and AUTH Endpoints',()=>{
     let db
     const {testUsers}= helpers.makeThingsFixtures()
     const testUser= testUsers[0]
@@ -60,7 +62,7 @@ describe('Auth Endpoints',()=>{
         }) })
     })
 
-    describe(`POST /api/auth/login`, ()=>{
+    describe(`Auth endpoints`, ()=>{
         beforeEach('insert users',()=>{
             //db.into('thingful').insert(testThings)
             helpers.seedUsers(db,testUsers)

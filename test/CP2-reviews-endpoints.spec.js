@@ -1,5 +1,6 @@
-const knex = require('knex')
 const app = require('../src/app')
+const knex = require('knex')
+
 const helpers = require('./test-helpers')
 
 describe('Reviews Endpoints', function() {

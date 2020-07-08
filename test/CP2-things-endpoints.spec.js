@@ -1,7 +1,9 @@
-const knex = require('knex')
 const app = require('../src/app')
+const knex = require('knex')
+//const supertest = require('supertest')
+
 const helpers = require('./test-helpers')
-const supertest = require('supertest')
+
 
 describe('Things Endpoints', function() {
   let db

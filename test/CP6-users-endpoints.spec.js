@@ -1,11 +1,10 @@
-const knex = require('knex')
-const bcrypt = require('bcryptjs')
 const app = require('../src/app')
+const knex = require('knex')
+//const supertest = require('supertest')
+
 const helpers= require('./test-helpers')
-const supertest = require('supertest')
-const { expect } = require('chai')
-
-
+const bcrypt = require('bcryptjs')
+//const { expect } = require('chai')
 
 describe('Users Endpoints',()=>{
     let db
@@ -22,9 +21,9 @@ describe('Users Endpoints',()=>{
     before('cleanup', () => helpers.cleanTables(db))
     afterEach('cleanup', () => helpers.cleanTables(db))
 
-    describe.only(`POST /api/users`,()=>{
-        context.only(`User Validation`,()=>{
-            
+    describe(`POST /api/users`,()=>{
+        context(`User Validation`,()=>{
+        
             beforeEach('insert users',()=>{
                 helpers.seedUsers(db,testUsers)
             })
@@ -95,12 +94,13 @@ describe('Users Endpoints',()=>{
                     .send(userPasswordNotComplex)
                     .expect(400,{error:'Password must contain 1 upper case,lower case,number and special character'})
             })
-            it.only(`respond 400 when username already taken`,()=>{
+            it(`respond 400 when username already taken`,()=>{
                 /*
                 before('insert users',()=>{
                     helpers.seedUsers(db,testUsers)
                 })
                 */
+                //after('clear tables',()=>helpers.cleanTables(db))
                 const duplicateUser= {
                     user_name: testUser.user_name,
                     password: '11AAaa!!',

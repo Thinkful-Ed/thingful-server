@@ -5,10 +5,10 @@ const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
 
-const thingsRouter = require('./things/things-router')
-const reviewsRouter = require('./reviews/reviews-router')
-const authRouter= require(`./auth/auth-router`)
-const usersRouter= require('./users/users-router')
+const thingsRouter = require('./Endpoints-Things/things-router')
+const reviewsRouter = require('./Endpoints-Reviews/reviews-router')
+const authRouter= require(`./Endpoints-Auth/auth-router`)
+const usersRouter= require('./Endpoints-Users/users-router')
 
 const app = express()
 
