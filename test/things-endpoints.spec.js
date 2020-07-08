@@ -6,13 +6,9 @@ const supertest = require('supertest')
 describe('Things Endpoints', function() {
   let db
   const {testUsers,testThings,testReviews,} = helpers.makeThingsFixtures()
+  const testUser=testUsers[0]
 
-  function makeAuthHeader(user) {
-    const token = Buffer.from(`${user.user_name}:${user.password}`).toString(`base64`)
-    return `Basic ${token}`
-  }
-
-  before('make knex instance', () => {
+  before('makeAuthHeader knex instance', () => {
     db = knex({
       client: 'pg',
       connection: process.env.TEST_DB_URL,
@@ -24,82 +20,12 @@ describe('Things Endpoints', function() {
   before('cleanup', () => helpers.cleanTables(db))
   afterEach('cleanup', () => helpers.cleanTables(db))
 
-  const protectedEndpoints = [
-    {name:`GET /api/things/:thing_id`,method:'GET',path:`/api/things/1`},
-    {name:`GET /api/things/:thing_id/reviews `,method:'GET',path:`/api/things/1/reviews`},
-    {name:`POST /api/reviews`,method:'POST',path:`/api/reviews`},
-  ]
-  protectedEndpoints.forEach(endpoint=>{
-    describe(`${endpoint.name}-PROTECTED ENDPOINT`,()=>{
-      beforeEach(()=>{
-        //db.into('thingful').insert(testThings)
-        helpers.seedUsers(db,testUsers)
-      })
-      if (endpoint.method === 'GET') {
-        it(`respond 401 when no basic token`,()=>{
-          return supertest(app)
-          .get(endpoint.path)
-          .expect(401,{error:`Missing basic token`})
-        })
-        it(`respond 401 when no credentials in token`,()=>{
-          const userNoCreds={user_name:'',password:''}
-          return supertest(app)
-          .get(endpoint.path)
-          .set('Authorization', makeAuthHeader(userNoCreds))
-          .expect(401,{error:`Unauthorized request`});
-        })
-        it(`respond 401 when invalid user`,()=>{
-          const userInvalidCreds= {user_name:`user-not`, password: `existy`}
-          return supertest(app)
-          .get(endpoint.path)
-          .set('Authorization', makeAuthHeader(userInvalidCreds))
-          .expect(401,{error:`Unauthorized request`});
-        })
-        it(`respond 401 when invalid password`,()=>{
-          const userInvalidPass= {user_name:testUsers[0].user_name, password: `wrong`}
-          return supertest(app)
-          .get(endpoint.path)
-          .set('Authorization', makeAuthHeader(userInvalidPass))
-          .expect(401,{error:`Unauthorized request`});
-        })
-      }
-      else {
-        it(`respond 401 when no basic token`,()=>{
-          return supertest(app)
-          .post(endpoint.path)
-          .expect(401,{error:`Missing basic token`})
-        })
-        it(`respond 401 when no credentials in token`,()=>{
-          const userNoCreds={user_name:'',password:''}
-          return supertest(app)
-          .post(endpoint.path)
-          .set('Authorization', makeAuthHeader(userNoCreds))
-          .expect(401,{error:`Unauthorized request`});
-        })
-        it(`respond 401 when invalid user`,()=>{
-          const userInvalidCreds= {user_name:`user-not`, password: `existy`}
-          return supertest(app)
-          .post(endpoint.path)
-          .set('Authorization', makeAuthHeader(userInvalidCreds))
-          .expect(401,{error:`Unauthorized request`});
-        })
-        it(`respond 401 when invalid password`,()=>{
-          const userInvalidPass= {user_name:testUsers[0].user_name, password: `wrong`}
-          return supertest(app)
-          .post(endpoint.path)
-          .set('Authorization', makeAuthHeader(userInvalidPass))
-          .expect(401,{error:`Unauthorized request`});
-        })
-      } 
-    })
-  })
-
   describe(`GET /api/things`, () => {
     context(`Given no things`, () => {
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
           .get('/api/things')
-          .set('Authorization',makeAuthHeader(testThings[0]))
+          //.set('Authorization',helpers.makeAuthHeader(testUser,secret=process.env.JWT_SECRET))
           .expect(200, [])
       })
     })
@@ -116,7 +42,7 @@ describe('Things Endpoints', function() {
         )
         return supertest(app)
           .get('/api/things')
-          .set('Authorization',makeAuthHeader(testThings[0]))
+          //.set('Authorization',helpers.makeAuthHeader(testUser,secret=process.env.JWT_SECRET))
           .expect(200, expectedThings)
       })
     })
@@ -138,7 +64,7 @@ describe('Things Endpoints', function() {
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/things`)
-          .set('Authorization',makeAuthHeader(testThings[0]))
+          //.set('Authorization',helpers.makeAuthHeader(testUser,secret=process.env.JWT_SECRET))
           .expect(200)
           .expect(res => {
             expect(res.body[0].title).to.eql(expectedThing.title)
@@ -148,57 +74,38 @@ describe('Things Endpoints', function() {
     })
   })
 
-  describe.only(`GET /api/things/:thing_id`, () => {
-    //const user= {user_name: testUsers[0].user_name, password: testUsers[0].password}
-    const user= {user_name: 'dunder', password: 'password'}
-    console.log(user)
-    console.log(makeAuthHeader(user))
-    context(`Given no things`, () => {
-      it(`responds with 404`, () => {
+  describe(`GET /api/things/:thing_id`, ()=>{
+    console.log(helpers.makeAuthHeader(testUser))
+    context(`Given no XSS attack`,()=>{
+      beforeEach('insert test table',()=>helpers.seedThingsTables(db,testUsers,testThings,testReviews))
+      it(`Given thing doesn't exist`,()=>{
         const thingId = 123456
-        return supertest(app)
-          .get(`/api/things/${thingId}`)
-          .set('Authorization',makeAuthHeader(user))
+        return supertest(app).get(`/api/things/${thingId}`)
+          .set('Authorization',helpers.makeAuthHeader(testUser))
           .expect(404, { error: `Thing doesn't exist` })
       })
-    })
-    context('Given there are things in the database', () => {
-      beforeEach('insert things', () =>
-        helpers.seedThingsTables(db,testUsers,testThings,testReviews,)
-      )
-      it('responds with 200 and the specified thing', () => {
+      it(`Given thing does exist`,()=>{
         const thingId = 2
         const expectedThing = helpers.makeExpectedThing(
-          testUsers,
-          testThings[thingId - 1],
-          testReviews,
+          testUsers,testThings[thingId - 1],testReviews,
         )
-
-        return supertest(app)
-          .get(`/api/things/${thingId}`)
-          .set('Authorization',makeAuthHeader(user))
+        return supertest(app).get(`/api/things/${thingId}`)
+          .set('Authorization',helpers.makeAuthHeader(testUser))
           .expect(200, expectedThing)
       })
-    })
-    context(`Given an XSS attack thing`, () => {
-      const testUser = helpers.makeUsersArray()[1]
-      const {
-        maliciousThing,
-        expectedThing,
-      } = helpers.makeMaliciousThing(testUser)
 
+    })
+    context(`Given an XSS attack`,()=>{
+      const {maliciousThing,expectedThing,} = helpers.makeMaliciousThing(testUser)
       beforeEach('insert malicious thing', () => {
         return helpers.seedMaliciousThing(
-          db,
-          testUser,
-          maliciousThing,
+          db,testUser,maliciousThing,
         )
       })
-
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/things/${maliciousThing.id}`)
-          .set('Authorization',makeAuthHeader(testThings[0]))
+          .set('Authorization',helpers.makeAuthHeader(testUser))
           .expect(200)
           .expect(res => {
             expect(res.body.title).to.eql(expectedThing.title)
@@ -208,35 +115,50 @@ describe('Things Endpoints', function() {
     })
   })
 
-  describe(`GET /api/things/:thing_id/reviews`, () => {
-    context(`Given no things`, () => {
-      beforeEach(()=>{
-        //db.into('thingful').insert(testThings)
-        helpers.seedUsers(db,testUsers)
-      })
-      it(`responds with 404`, () => {
+  describe(`GET /api/things/:thing_id/reviews`,()=>{
+    context(`Given no XSS attack`,()=>{
+      beforeEach('insert test table',()=>helpers.seedThingsTables(db,testUsers,testThings,testReviews))
+      it(`Given review for thing that doesn't exist`,()=>{
         const thingId = 123456
-        return supertest(app)
-          .get(`/api/things/${thingId}/reviews`)
-          .set('Authorization',makeAuthHeader(testThings[0]))
+        return supertest(app).get(`/api/things/${thingId}/reviews`)
+          .set('Authorization',helpers.makeAuthHeader(testUser))
           .expect(404, { error: `Thing doesn't exist` })
       })
-    })
-    context('Given there are reviews for thing in the database', () => {
-      beforeEach('insert things', () =>
-        helpers.seedThingsTables(db,testUsers,testThings,testReviews,)
-      )
-
-      it('responds with 200 and the specified reviews', () => {
-        const thingId = 1
+      it(`Given review for thing that does exist`,()=>{
+        const thingId = 2
         const expectedReviews = helpers.makeExpectedThingReviews(
-          testUsers, thingId, testReviews
+          testUsers,thingId,testReviews
         )
-        return supertest(app)
-          .get(`/api/things/${thingId}/reviews`)
-          .set('Authorization',makeAuthHeader(testThings[0]))
+        //console.log(`expected review`,expectedReviews)
+        return supertest(app).get(`/api/things/${thingId}/reviews`)
+          .set('Authorization',helpers.makeAuthHeader(testUser))
           .expect(200, expectedReviews)
       })
     })
+    context.skip(`Given an XSS attack`,()=>{
+
+    })
+
   })
+  /*
+  describe(`GET /api/things/:thing_id`, () => {
+    context(`Given no things`, () => {
+      beforeEach(()=>db.into('thingful_users').insert(testUsers))
+      it(`responds with 404`, () => {
+        const thingId = 123456
+        
+      })
+    })
+    context('Given there are things in the database', () => {
+      beforeEach('insert things',()=>helpers.seedThingsTables(db,testUsers,testThings,testReviews))
+      it('responds with 200 and the specified thing', () => {
+        
+      })
+    })
+    context(`Given an XSS attack thing`, () => {
+      
+    })
+  })
+*/
+  
 })

@@ -1,4 +1,6 @@
 const bcrypt= require('bcryptjs')
+const jwt= require('jsonwebtoken')
+//const config = require('../config')
 
 function makeUsersArray() {
   return [
@@ -265,6 +267,21 @@ function seedMaliciousThing(db, user, thing) {
     .then(() => db.into('thingful_things').insert([thing]))
 }
 
+function makeAuthHeader(user,secret=process.env.JWT_SECRET){
+  //console.log(user.user_name)
+  const token=jwt.sign({user_id: user.id},secret,{
+      subject: user.user_name,
+      algorithm:'HS256'
+  })
+  return `Bearer ${token}`
+}
+/*
+function makeAuthHeader(user) {
+    const token = Buffer.from(`${user.user_name}:${user.password}`).toString(`base64`)
+    return `Bearer ${token}`
+*/
+
+
 module.exports = {
   makeUsersArray,
   makeThingsArray,
@@ -277,5 +294,7 @@ module.exports = {
   cleanTables,
   seedThingsTables,
   seedMaliciousThing,
-  seedUsers
+  seedUsers,
+
+  makeAuthHeader
 }
