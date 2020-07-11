@@ -42,44 +42,40 @@
         The result returned by SETVAL() is next_value or NULL if the given next_value and round is smaller than the current value.
         Link: https://www.postgresql.org/docs/8.2/functions-sequence.html 
 
-# PROTECTED ENDPOINTS:
-    Public:
-        The GET /api/things 
-    Basic auth:
-        The GET /api/things/:thing_id 
-        The GET /api/things/:thing_id/reviews 
-        The POST /api/reviews endpoint (automatically assign a user_id)
-    PrivateRoute:
-        If a user tries to view reviews for a thing, they should be redirected to the login form page.
-    PublicOnlyRoute:
-        If a user attempts to view the login form when they're already logged in, they should be redirected to the thing list page.
+# SUMMARY:   
+    # TAKE NOTES:
+        db.raw && DISTINCT && author:
+        leftjoin()
+        json-function: 
+            Link: https://www.postgresql.org/docs/9.5/functions-json.html  
+            json_strip_nulls: Returns from_json with all object fields that have null values omitted. Other null values are untouched.
+            json_build_object: Builds a JSON object out of a variadic argument list. By convention, the argument list consists of alternating keys and values.
+        jwt-decode:
+            Link: https://www.npmjs.com/package/jwt-decode 
+            small library that helps decoding JWTs token which are Base64Url encoded.
+        Treeize()
+            Converts row data (in JSON/associative array format or flat array format) to object/tree structure based on simple column naming conventions. (https://www.npmjs.com/package/treeize)
+            .grow() 
 
-    The thingful-client should store the base64 encoded credentials when the login form is submitted.
-    The base64 encoded credentials should be sent in requests to protected endpoints.
+    # PROJECT GENERAL IDEA:
+        To list the dir:            tree -I node_modules -d
+        To install tree:            brew install tree || sudo apt i tree
+        To show avai commands:      npm run
+    # FIGURE OUT HOW TO RUN THE PROJECT
+        To create db:               CREATE DATABASE <dbName> OWNER <roleName>;
+        To run migrate:             npm run migrate
+        To seed db:                 psql -U <roleName> <dbName> -f <filePath>
+                                    copy <dbName> FROM <filePath>
+    # FIND THE INTERFACE OF THE PROJECT:
+        Frontend:   through the browser, using buttons on the page,and routes in the address bar
+        Backend:    through API endpoints
+        Tests:
+            Files:  xxx.test.js || xxx.spec.js
+            Syntax: npm run migrate:test (run the migrations for the test database)
+    # DISCUSSION:
     
 
-    
 
-# DATA PROTECTION:
-    Implement the logout button functionality to clear the token in local storage:
-        components/Header/header.js:
-            + TokenService.clearAuthToken()
-    Update db seeding data to use hashed passwords, using bcrypt
-    update basic-auth middleware to use bcrypts to compare the password in the basic token with the hash
 
-# SECURE LOGIN:
-    Create a POST/login endpoint that responds with a JWT(JSON Web Tokens)
-    Update login form to store the JWT from the res in local storage 
-    Change middleware to verify the JWT instead of verifying the base64 encoded basic auth header
 
-# USER REGISTRATION:
-    REQUIREMENTS:
-        Unique, between 8-72 characters, shouldn't start or end with spaces
-        Contains at least 1 lower case letter, 1 number, 1 special character
-        full_name is required, nickname is optional 
-    HAPPY PATH:
-        read req body-> validate fields->bcrypt the password->insert the user into the db
-        send response:
-            201 with the response location of the new user's id
-            the res body should contain a serialized respresentation of the user, no pass down
-            the user should have also had a date_created field auto-populated 
+
