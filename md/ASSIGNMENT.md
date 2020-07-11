@@ -58,35 +58,7 @@
     The base64 encoded credentials should be sent in requests to protected endpoints.
     
 
-    CLIENT:
-        thing-api-service.js: 
-            headers: {
-                //Authorization: `Schema ${userName}:${password}
-                'authorization': `basic ${TokenService.getAuthToken}`,
-            }
-        App component:
-            path={`/login'} && path={`/register`}:  PublicOnlyRoute
-            path={`/thing/:thingId`}:               PrivateRoute
-    SERVER:
-        app.js:
-            const app= new Server();
-            app.post('',()=>{
-                const bearerToken=req.headers.getBearerToken()
-                Database.findUser({})
-            })
-        middleware/basic-auth.js
-            function requireAuth(req,res,next) {
-                console.log(req.get(`Authorization`))
-                const authToken = req.get(`Authorization`) || ''
-                if (!authToken.toLowerCase().startWith('basic')){
-                    return res.status(401).json({error:`Missing basic token`});
-                }
-                next()
-            }
-        router.js
-            const {requireAuth} = require()
-            + .all(requireAuth) for each Route
-    TEST:
+    
 
 # DATA PROTECTION:
     Implement the logout button functionality to clear the token in local storage:
