@@ -6,7 +6,7 @@ const helpers= require('./test-helpers')
 const bcrypt = require('bcryptjs')
 //const { expect } = require('chai')
 
-describe('Users Endpoints',()=>{
+describe.only('Users Endpoints',()=>{
     let db
     const {testUsers}= helpers.makeThingsFixtures()
     const testUser= testUsers[0]

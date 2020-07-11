@@ -72,7 +72,9 @@ describe('PROTECTED and AUTH Endpoints',()=>{
             const expectedToken = jwt.sign(
                 {user_id: testUser.id}, //payload
                 process.env.JWT_SECRET,
-                {subject: testUser.user_name,algorithm: `HS256`}
+                {subject: testUser.user_name,
+                expiresIn: process.env.JWT_EXPIRY,
+                algorithm: `HS256`}
             )
             return supertest(app).post(`/api/auth/login`)
                 .send(userValidCreds)
