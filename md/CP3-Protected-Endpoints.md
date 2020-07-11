@@ -1,9 +1,9 @@
 # NOTES:
     #DEFINITION:
         Protected endpoint is an endpoint which can only be used by authenticated req
-    # ENCODED VALUES: 
+    #ENCODED VALUES: 
         values that human wouldn't be able to read and understand w/o using a machine (!= decode)
-    # BASIC AUTH:
+    #BASIC AUTH:
         involves Base64 endcoding 
         window.btoa() === ``
         window.localStorage.setItem('name', 'value') -> Check at application/storage/localStorage
