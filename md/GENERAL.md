@@ -33,6 +33,7 @@
     use for db transactions, then wire up API endpoints with PostgreSQL in an express app
     allgns with these best practices: DRY,SOC, increase modularization and encapsulation
     Create-Read-Update-Delete / Insert-Select-Update-Delete/ Post-Get-Patch(Put)-Delete
+    
 #ROUTER OBJ:
     In <router.js>:
         require express,service file

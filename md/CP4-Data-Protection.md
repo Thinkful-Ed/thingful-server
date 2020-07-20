@@ -1,16 +1,5 @@
 # NOTES:
-    #Good practices:
-        Ask for consent, only store the data you need,use pseudonyms,use authentication mechanisms
-    #Pseudonymised: 
-        encryping PIN, masking info,hashing data
-    #Hashing:
-        Encrypt: secret code (can be converted)
-        Hash: cannot be reverted, make it extremely difficult to guess
-    #Bcrypt: 
-        Definition:                                   A form of "hashing"
-        Salt:                                         random text added to the string to be hashed (10->12)
-        bcrypt.compare(bcrypt.hash('text'),'text')    compare a string with the hash we generated
-        bcrypt.hashSync()
+    
     #Logout:
 # ASSIGNMENT:
     CLIENT:
