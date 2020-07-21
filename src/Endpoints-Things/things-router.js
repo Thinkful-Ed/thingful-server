@@ -1,10 +1,11 @@
 const express = require('express')
 const ThingsService = require('./things-service')
+//const {requireAuth} = require('../middleware/basic-auth')
+const {requireAuth} = require('../middleware/jwt-auth')
 
 const thingsRouter = express.Router()
 
-thingsRouter
-  .route('/')
+thingsRouter.route('/')
   .get((req, res, next) => {
     ThingsService.getAllThings(req.app.get('db'))
       .then(things => {
@@ -13,14 +14,15 @@ thingsRouter
       .catch(next)
   })
 
-thingsRouter
-  .route('/:thing_id')
+thingsRouter.route('/:thing_id')
+  .all(requireAuth)
   .all(checkThingExists)
   .get((req, res) => {
     res.json(ThingsService.serializeThing(res.thing))
   })
 
 thingsRouter.route('/:thing_id/reviews/')
+  .all(requireAuth)
   .all(checkThingExists)
   .get((req, res, next) => {
     ThingsService.getReviewsForThing(
@@ -40,12 +42,10 @@ async function checkThingExists(req, res, next) {
       req.app.get('db'),
       req.params.thing_id
     )
-
-    if (!thing)
-      return res.status(404).json({
-        error: `Thing doesn't exist`
-      })
-
+    if (!thing) {
+      return res.status(404).json({error: `Thing doesn't exist`})
+    }
+      
     res.thing = thing
     next()
   } catch (error) {

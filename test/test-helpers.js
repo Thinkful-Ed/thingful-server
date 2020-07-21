@@ -1,3 +1,7 @@
+const bcrypt= require('bcryptjs')
+const jwt= require('jsonwebtoken')
+//const config = require('../config')
+
 function makeUsersArray() {
   return [
     {
@@ -223,37 +227,60 @@ function makeThingsFixtures() {
 function cleanTables(db) {
   return db.raw(
     `TRUNCATE
+      thingful_reviews,
       thingful_things,
-      thingful_users,
-      thingful_reviews
-      RESTART IDENTITY CASCADE`
+      thingful_users
+    RESTART IDENTITY CASCADE`
   )
 }
+// raw
+
+function seedUsers(db,users) {
+  const preppedUsers = users.map(user=>({
+    ...user,
+    password: bcrypt.hashSync(user.password,1)
+  }))
+  return db.into('thingful_users').insert(preppedUsers)
+  .then(()=>db.raw(
+      `SELECT setval('thingful_users_id_seq',?)`, [users[users.length-1].id]
+  ))
+}
+/*
+function seedThingsTables(db,users,things,reviews=[]) {
+  return db.transaction(async trx=>{
+    await seedUsers(trx,users)
+    await trx.into('thingful_things').insert(things)
+    await trx.raw(
+      `SELECT setval('thingful_things_id_seq',?)`,[things[things.length-1].id]
+    )
+  })
+}*/
 
 function seedThingsTables(db, users, things, reviews=[]) {
-  return db
-    .into('thingful_users')
-    .insert(users)
-    .then(() =>
-      db
-        .into('thingful_things')
-        .insert(things)
-    )
-    .then(() =>
-      reviews.length && db.into('thingful_reviews').insert(reviews)
-    )
+  return db.into('thingful_users').insert(users)
+    .then(() =>db.into('thingful_things').insert(things))
+    .then(() =>reviews.length && db.into('thingful_reviews').insert(reviews))
 }
 
 function seedMaliciousThing(db, user, thing) {
-  return db
-    .into('thingful_users')
-    .insert([user])
-    .then(() =>
-      db
-        .into('thingful_things')
-        .insert([thing])
-    )
+  return seedUsers(db,[user])
+    .then(() => db.into('thingful_things').insert([thing]))
 }
+
+function makeAuthHeader(user,secret=process.env.JWT_SECRET){
+  //console.log(user.user_name)
+  const token=jwt.sign({user_id: user.id},secret,{
+      subject: user.user_name,
+      algorithm:'HS256'
+  })
+  return `Bearer ${token}`
+}
+/*
+function makeAuthHeader(user) {
+    const token = Buffer.from(`${user.user_name}:${user.password}`).toString(`base64`)
+    return `Bearer ${token}`
+*/
+
 
 module.exports = {
   makeUsersArray,
@@ -267,4 +294,7 @@ module.exports = {
   cleanTables,
   seedThingsTables,
   seedMaliciousThing,
+  seedUsers,
+
+  makeAuthHeader
 }

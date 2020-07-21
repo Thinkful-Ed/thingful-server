@@ -1,15 +1,15 @@
-const knex = require('knex')
 const app = require('../src/app')
+const knex = require('knex')
+
 const helpers = require('./test-helpers')
 
 describe('Reviews Endpoints', function() {
   let db
-
-  const {
-    testThings,
-    testUsers,
-  } = helpers.makeThingsFixtures()
-
+  const {testThings,testUsers,} = helpers.makeThingsFixtures()
+/*
+  const validUser = testUsers[0].user_name
+  const validPassword=testUsers[0].password
+*/
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
@@ -19,20 +19,13 @@ describe('Reviews Endpoints', function() {
   })
 
   after('disconnect from db', () => db.destroy())
-
   before('cleanup', () => helpers.cleanTables(db))
-
   afterEach('cleanup', () => helpers.cleanTables(db))
 
   describe(`POST /api/reviews`, () => {
     beforeEach('insert things', () =>
-      helpers.seedThingsTables(
-        db,
-        testUsers,
-        testThings,
-      )
+      helpers.seedThingsTables(db,testUsers,testThings,)
     )
-
     it(`creates an review, responding with 201 and the new review`, function() {
       this.retries(3)
       const testThing = testThings[0]
@@ -43,8 +36,8 @@ describe('Reviews Endpoints', function() {
         thing_id: testThing.id,
         user_id: testUser.id,
       }
-      return supertest(app)
-        .post('/api/reviews')
+      return supertest(app).post('/api/reviews')
+        .set('Authorization',helpers.makeAuthHeader(testUser,secret=process.env.JWT_SECRET))
         .send(newReview)
         .expect(201)
         .expect(res => {
@@ -91,8 +84,8 @@ describe('Reviews Endpoints', function() {
       it(`responds with 400 and an error message when the '${field}' is missing`, () => {
         delete newReview[field]
 
-        return supertest(app)
-          .post('/api/reviews')
+        return supertest(app).post('/api/reviews')
+          .set('Authorization',helpers.makeAuthHeader(testUser,secret=process.env.JWT_SECRET))
           .send(newReview)
           .expect(400, {
             error: `Missing '${field}' in request body`,
